@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     provider_timeout_seconds: float = 5
     cors_origins: str = "http://localhost:5173"
     database_url: str = "postgresql+asyncpg://bookverse:bookverse@localhost:5432/bookverse"
+    jwt_secret: str = "change-this-development-secret-before-deployment"
+    access_token_minutes: int = 15
+    refresh_token_days: int = 30
+    refresh_cookie_secure: bool = False
 
 
 settings = Settings()

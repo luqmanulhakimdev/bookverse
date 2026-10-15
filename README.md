@@ -11,6 +11,12 @@ BookVerse is a book discovery app that searches Open Library and Google Books th
 - Responsive React search interface with debounced real API requests, source links, preview/reading labels, provider filter, loading/empty/error states, and accessible controls.
 - Mocked provider and orchestration tests; normal tests make no live requests.
 
+## Persistence and accounts
+
+The PostgreSQL schema is managed by Alembic. Search records are upserted by `(provider, external_id)`; `Book` is an internal UUID, and each external catalog record remains a separate source record. Run `cd backend && alembic upgrade head` after PostgreSQL is available. Book detail and availability endpoints read the persisted records.
+
+Registration uses Argon2id password hashing. Access tokens are short-lived JWTs returned to the client for in-memory use. Refresh tokens are random opaque values stored only as SHA-256 digests and delivered in an HttpOnly, SameSite=Strict cookie; each refresh rotates the token, and reuse revokes the session family. Set `REFRESH_COOKIE_SECURE=true` behind HTTPS and replace `JWT_SECRET` with a long random secret before deployment. The browser must not persist access tokens in localStorage. Library endpoints always scope reads and writes to the authenticated user and record reading events.
+
 ## Requirements
 
 - Python 3.11 or newer

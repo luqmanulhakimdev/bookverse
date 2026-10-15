@@ -5,6 +5,9 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .api.auth import router as auth_router
+from .api.library import router as library_router
+from .api.users import router as users_router
 from .config import settings
 from .database import get_session
 from .providers import GoogleBooksProvider, OpenLibraryProvider
@@ -28,9 +31,13 @@ app = FastAPI(title="BookVerse API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[origin.strip() for origin in settings.cors_origins.split(",")],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(library_router)
 
 
 @app.get("/health")
