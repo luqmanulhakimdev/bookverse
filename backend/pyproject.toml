@@ -6,10 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "bookverse-api"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["fastapi>=0.110,<1", "uvicorn[standard]>=0.29,<1", "httpx>=0.27,<1", "pydantic-settings>=2.2,<3"]
+dependencies = ["fastapi>=0.110,<1", "uvicorn[standard]>=0.29,<1", "httpx>=0.27,<1", "pydantic-settings>=2.2,<3", "SQLAlchemy[asyncio]>=2.0.30,<3", "asyncpg>=0.29,<1", "alembic>=1.13,<2"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<9", "pytest-asyncio>=0.23,<1", "ruff>=0.4,<1"]
+dev = ["pytest>=8,<9", "pytest-asyncio>=0.23,<1", "ruff>=0.4,<1", "aiosqlite>=0.20,<1", "httpx>=0.27,<1"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -21,3 +21,4 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+ignore = ["E501"]

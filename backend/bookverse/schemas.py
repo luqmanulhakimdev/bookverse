@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 class Book(BaseModel):
     id: str
+    external_id: str | None = None
     title: str
     authors: list[str] = Field(default_factory=list)
     description: str | None = None
