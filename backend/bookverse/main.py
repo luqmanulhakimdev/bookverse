@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .api.auth import router as auth_router
 from .api.library import router as library_router
+from .api.recommendations import router as recommendations_router
 from .api.users import router as users_router
 from .config import settings
 from .database import get_session
@@ -39,6 +40,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(library_router)
+app.include_router(recommendations_router)
 
 
 @app.get("/health")

@@ -29,3 +29,7 @@ erDiagram
 ```
 
 The ERD shows the planned normalized data model; persistence and migrations are not part of Phase 1.
+
+## Recommendations
+
+Recommendations compare normalized title/description tokens, exact authors, genres, and language. The deterministic score uses a normalized weighted average (genre 0.45, author 0.30, text 0.20, language 0.05 over features present on both books). Reasons are returned only for actual overlaps. Personal recommendations use only the requesting user's `reading`/`finished`/rated books as seeds and exclude every book already in that user's library. Results below 0.10 similarity are suppressed. Similar-book results exclude the requested book. This is a transparent baseline: provider genre coverage and author names vary, editions are not yet unified, and no collaborative or popularity signal is included.

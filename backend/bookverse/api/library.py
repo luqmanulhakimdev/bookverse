@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..database import get_session
-from ..models import Book, BookAuthor, ReadingEvent, User, UserBook
+from ..models import Book, BookAuthor, BookGenre, ReadingEvent, User, UserBook
 from ..repositories.books import serialize_book
 from ..schemas_auth import LibraryItemInput
 from .dependencies import current_user
@@ -24,6 +24,7 @@ async def list_library(
         .options(
             selectinload(UserBook.book).selectinload(Book.sources),
             selectinload(UserBook.book).selectinload(Book.authors).selectinload(BookAuthor.author),
+            selectinload(UserBook.book).selectinload(Book.genres).selectinload(BookGenre.genre),
         )
         .order_by(UserBook.updated_at.desc())
     )

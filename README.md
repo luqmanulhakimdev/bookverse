@@ -18,6 +18,8 @@ The PostgreSQL schema is managed by Alembic. Search records are upserted by `(pr
 
 Registration uses Argon2id password hashing. Access tokens are short-lived JWTs returned to the client for in-memory use. Refresh tokens are random opaque values stored only as SHA-256 digests and delivered in an HttpOnly, SameSite=Strict cookie; each refresh rotates the token, and reuse revokes the session family. Set `REFRESH_COOKIE_SECURE=true` behind HTTPS and replace `JWT_SECRET` with a long random secret before deployment. The browser must not persist access tokens in localStorage. Library endpoints always scope reads and writes to the authenticated user and record reading events.
 
+Recommendations use deterministic content features (genre, author, language, and title/description overlap) and return human-readable reasons. Personal recommendations require a signed-in user and never inspect another user's library. The scoring weights and limitations are documented in `docs/architecture.md`.
+
 ## Requirements
 
 - Python 3.11 or newer

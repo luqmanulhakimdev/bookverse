@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..models import Author, Book, BookAuthor, BookSource
+from ..models import Author, Book, BookAuthor, BookGenre, BookSource, Genre
 from ..schemas import Book as BookSchema
 
 
@@ -14,7 +14,10 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
         select(BookSource)
         .where(BookSource.provider == item.source, BookSource.external_id == source_id)
         .options(
-            selectinload(BookSource.book).selectinload(Book.authors).selectinload(BookAuthor.author)
+            selectinload(BookSource.book)
+            .selectinload(Book.authors)
+            .selectinload(BookAuthor.author),
+            selectinload(BookSource.book).selectinload(Book.genres).selectinload(BookGenre.genre),
         )
     )
     if source:
@@ -32,6 +35,7 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
             cover_url=str(item.cover_url) if item.cover_url else None,
         )
         book.authors = []
+        book.genres = []
         session.add(book)
         await session.flush()
         session.add(
@@ -60,6 +64,18 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
             await session.flush()
         book.authors.append(BookAuthor(author=author, position=position))
         existing.add(name.casefold())
+    existing_genres = {link.genre.name.casefold() for link in book.genres}
+    for name in item.genres:
+        normalized = name.strip()
+        if not normalized or normalized.casefold() in existing_genres:
+            continue
+        genre = await session.scalar(select(Genre).where(Genre.name == normalized))
+        if genre is None:
+            genre = Genre(name=normalized)
+            session.add(genre)
+            await session.flush()
+        book.genres.append(BookGenre(genre=genre))
+        existing_genres.add(normalized.casefold())
     await session.flush()
     return book
 
@@ -69,7 +85,9 @@ async def get_book(session: AsyncSession, book_id: UUID) -> Book | None:
         select(Book)
         .where(Book.id == book_id)
         .options(
-            selectinload(Book.sources), selectinload(Book.authors).selectinload(BookAuthor.author)
+            selectinload(Book.sources),
+            selectinload(Book.authors).selectinload(BookAuthor.author),
+            selectinload(Book.genres).selectinload(BookGenre.genre),
         )
     )
 
@@ -81,6 +99,7 @@ async def serialize_book(book: Book) -> dict:
         "id": str(book.id),
         "title": book.title,
         "authors": [a.author.name for a in authors],
+        "genres": [link.genre.name for link in book.genres],
         "description": book.description,
         "language": book.language,
         "published_year": book.published_year,

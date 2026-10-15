@@ -8,6 +8,7 @@ class Book(BaseModel):
     external_id: str | None = None
     title: str
     authors: list[str] = Field(default_factory=list)
+    genres: list[str] = Field(default_factory=list)
     description: str | None = None
     language: str | None = None
     published_year: int | None = None

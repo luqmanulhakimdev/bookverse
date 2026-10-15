@@ -21,6 +21,7 @@ class GoogleBooksProvider(HttpProvider):
             if not isinstance(info, dict) or not info.get("title"):
                 continue
             links = info.get("imageLinks") or {}
+            categories = info.get("categories") or []
             year_text = info.get("publishedDate", "")
             try:
                 year = int(year_text[:4]) if len(year_text) >= 4 else None
@@ -35,6 +36,9 @@ class GoogleBooksProvider(HttpProvider):
                     id=str(item["id"]),
                     title=str(info["title"]),
                     authors=[str(a) for a in info.get("authors", []) if isinstance(a, str)],
+                    genres=[str(g) for g in categories if isinstance(g, str)]
+                    if isinstance(categories, list)
+                    else [],
                     description=info.get("description")
                     if isinstance(info.get("description"), str)
                     else None,

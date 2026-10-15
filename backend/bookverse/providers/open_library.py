@@ -20,11 +20,15 @@ class OpenLibraryProvider(HttpProvider):
             cover_id = doc.get("cover_i")
             languages = doc.get("language")
             year = doc.get("first_publish_year")
+            subjects = doc.get("subject", [])
             books.append(
                 Book(
                     id=str(doc["key"]),
                     title=str(doc["title"]),
                     authors=[str(a) for a in doc.get("author_name", []) if isinstance(a, str)],
+                    genres=[str(g) for g in subjects[:8] if isinstance(g, str)]
+                    if isinstance(subjects, list)
+                    else [],
                     language=languages[0] if isinstance(languages, list) and languages else None,
                     published_year=year if isinstance(year, int) else None,
                     cover_url=f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg"
