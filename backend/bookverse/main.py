@@ -10,7 +10,7 @@ from .api.library import router as library_router
 from .api.users import router as users_router
 from .config import settings
 from .database import get_session
-from .providers import GoogleBooksProvider, OpenLibraryProvider
+from .providers import GoogleBooksProvider, GutenbergProvider, OpenLibraryProvider
 from .repositories.books import get_book, persist_book, serialize_book
 from .search import AllProvidersFailed, search_books
 
@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
         app.state.providers = [
             OpenLibraryProvider(client, settings.open_library_base_url),
             GoogleBooksProvider(client, settings.google_books_base_url),
+            GutenbergProvider(client, settings.gutenberg_api_url),
         ]
         yield
 

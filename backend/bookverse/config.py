@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     open_library_base_url: str = "https://openlibrary.org"
     google_books_base_url: str = "https://www.googleapis.com/books/v1"
+    gutenberg_api_url: str = "https://gutendex.com/books/"
     provider_timeout_seconds: float = 5
     cors_origins: str = "http://localhost:5173"
     database_url: str = "postgresql+asyncpg://bookverse:bookverse@localhost:5432/bookverse"

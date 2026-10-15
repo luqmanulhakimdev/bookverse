@@ -16,6 +16,7 @@ class Book(BaseModel):
     source_url: HttpUrl | None = None
     access_type: Literal["metadata", "preview", "read", "borrow", "download", "unknown"] = "unknown"
     access_url: HttpUrl | None = None
+    license_or_rights: str | None = None
 
 
 class ProviderStatus(BaseModel):

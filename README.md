@@ -10,6 +10,7 @@ BookVerse is a book discovery app that searches Open Library and Google Books th
 - Search validation, bounded pagination inputs, CORS configuration, health endpoints, and generated OpenAPI docs.
 - Responsive React search interface with debounced real API requests, source links, preview/reading labels, provider filter, loading/empty/error states, and accessible controls.
 - Mocked provider and orchestration tests; normal tests make no live requests.
+- Project Gutenberg catalog results through Gutendex, with source-reported ebook links and rights notes that distinguish US public-domain signals from worldwide rights.
 
 ## Persistence and accounts
 

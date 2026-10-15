@@ -21,6 +21,7 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
         book = source.book
         source.access_type = item.access_type
         source.access_url = str(item.access_url) if item.access_url else None
+        source.license_or_rights = item.license_or_rights
         source.last_synced_at = func.now()
     else:
         book = Book(
@@ -40,6 +41,7 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
                 external_id=source_id,
                 access_type=item.access_type,
                 access_url=str(item.access_url) if item.access_url else None,
+                license_or_rights=item.license_or_rights,
             )
         )
     book.title = item.title
@@ -89,6 +91,7 @@ async def serialize_book(book: Book) -> dict:
                 "external_id": s.external_id,
                 "access_type": s.access_type,
                 "access_url": s.access_url,
+                "rights": s.license_or_rights,
             }
             for s in book.sources
         ],
