@@ -27,6 +27,18 @@ Recommendations use deterministic content features (genre, author, language, and
 
 ## Run locally
 
+Start the database and cache first, either by starting everything in containers:
+
+```sh
+docker compose up --build
+```
+
+or by starting only PostgreSQL and Redis, then running the API and Vite development server with the commands below:
+
+```sh
+docker compose up -d db redis
+```
+
 ```sh
 cd backend
 python -m venv .venv
@@ -35,6 +47,8 @@ pip install -e '.[dev]'
 cp .env.example .env
 uvicorn bookverse.main:app --reload
 ```
+
+Compose applies the migrations before starting the API. The frontend is at `http://localhost:8080`, the API at `http://localhost:8000`, and API docs at `http://localhost:8000/docs`. Its default database password and JWT secret are development-only. Set strong `POSTGRES_PASSWORD` and `JWT_SECRET`, configure the public frontend in `CORS_ORIGINS`, and set `REFRESH_COOKIE_SECURE=true` when serving over HTTPS before deployment.
 
 In another terminal:
 
@@ -69,7 +83,10 @@ cd backend && pytest
 cd backend && ruff check .
 cd frontend && npm test
 cd frontend && npm run build
+cd frontend && npm audit --audit-level=high
 ```
+
+CI runs Ruff, the backend test suite, Alembic migration application against PostgreSQL, frontend tests/build, and npm audit. Redis outages are reported as degraded readiness and bypassed by the cache, while PostgreSQL is required for readiness and persisted endpoints. Provider retries are bounded to one retry for transient failures. Rate limits are process-local; place a shared gateway or distributed limiter in front when horizontally scaling.
 
 ## Architecture and limitations
 

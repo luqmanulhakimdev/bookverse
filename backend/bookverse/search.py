@@ -12,11 +12,23 @@ class AllProvidersFailed(Exception):
 
 
 async def search_books(
-    query: str, page: int, limit: int, providers: list[BookProvider], timeout: float = 5
+    query: str,
+    page: int,
+    limit: int,
+    providers: list[BookProvider],
+    timeout: float = 5,
+    max_concurrency: int = 3,
+    language: str | None = None,
+    access_type: str | None = None,
 ) -> SearchResponse:
+    semaphore = asyncio.Semaphore(max_concurrency)
+
     async def call(provider: BookProvider):
         try:
-            result = await asyncio.wait_for(provider.search(query, page, limit), timeout=timeout)
+            async with semaphore:
+                result = await asyncio.wait_for(
+                    provider.search(query, page, limit), timeout=timeout
+                )
             return provider, result, None
         except Exception as exc:
             logger.warning("Book provider %s failed (%s)", provider.name, type(exc).__name__)
@@ -45,6 +57,10 @@ async def search_books(
             seen.add(identity)
             books.append(book)
     books.sort(key=lambda b: (b.title.casefold(), b.source))
+    if language:
+        books = [book for book in books if (book.language or "").casefold() == language.casefold()]
+    if access_type:
+        books = [book for book in books if book.access_type == access_type]
     return SearchResponse(
         items=books[:limit],
         page=page,

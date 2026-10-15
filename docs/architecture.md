@@ -16,6 +16,10 @@ The provider adapters map only fields supported by their source. Google Books pr
 
 Cross-provider duplicate matching currently requires an exact normalized title and ordered author list; it is deliberately conservative but can still collapse same-title editions in the result view. Persistent edition-aware matching is deferred until valid ISBN metadata is collected.
 
+## Reliability
+
+Public search cache keys include the normalized query, language, access type, page, limit, and selected providers; responses contain no user-specific data. Cache read/write failures degrade to a miss and are logged by exception class only. Upstream HTTP calls use explicit timeouts, retry 429/5xx and common connection failures once, and are concurrency-limited. API/auth requests use a process-local sliding window limiter. This is adequate for a single instance; horizontal deployments need a shared gateway or distributed rate limit. `/health` is a liveness check; `/ready` requires PostgreSQL and reports Redis as healthy or degraded because Redis is optional for request correctness.
+
 ```mermaid
 erDiagram
   USER ||--o{ USER_BOOK : owns
