@@ -60,8 +60,12 @@ async def update_library_item(
         entry = UserBook(user_id=user.id, book_id=book_id)
         session.add(entry)
         previous_status = None
+        previous_rating = None
+        previous_progress = None
     else:
         previous_status = entry.status
+        previous_rating = entry.rating
+        previous_progress = entry.progress
     entry.status, entry.rating, entry.progress = payload.status, payload.rating, payload.progress
     if previous_status != payload.status:
         session.add(
@@ -72,7 +76,13 @@ async def update_library_item(
                 progress=payload.progress,
             )
         )
-    elif payload.progress is not None:
+    elif previous_rating != payload.rating:
+        session.add(
+            ReadingEvent(
+                user_id=user.id, book_id=book_id, event_type="rated", progress=payload.progress
+            )
+        )
+    elif previous_progress != payload.progress and payload.progress is not None:
         session.add(
             ReadingEvent(
                 user_id=user.id, book_id=book_id, event_type="progress", progress=payload.progress

@@ -65,6 +65,7 @@ class BookSource(Base):
     provider: Mapped[str] = mapped_column(String(40), index=True)
     external_id: Mapped[str] = mapped_column(String(500))
     access_type: Mapped[str] = mapped_column(String(20), default="unknown")
+    source_url: Mapped[str | None] = mapped_column(Text)
     access_url: Mapped[str | None] = mapped_column(Text)
     license_or_rights: Mapped[str | None] = mapped_column(Text)
     last_synced_at: Mapped[datetime] = mapped_column(

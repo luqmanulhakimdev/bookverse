@@ -3,6 +3,15 @@ from typing import Literal
 from pydantic import BaseModel, Field, HttpUrl
 
 
+class BookSourceInfo(BaseModel):
+    provider: str
+    external_id: str
+    source_url: HttpUrl | None = None
+    access_type: Literal["metadata", "preview", "read", "borrow", "download", "unknown"] = "unknown"
+    access_url: HttpUrl | None = None
+    license_or_rights: str | None = None
+
+
 class Book(BaseModel):
     id: str
     external_id: str | None = None
@@ -18,6 +27,7 @@ class Book(BaseModel):
     access_type: Literal["metadata", "preview", "read", "borrow", "download", "unknown"] = "unknown"
     access_url: HttpUrl | None = None
     license_or_rights: str | None = None
+    sources: list[BookSourceInfo] = Field(default_factory=list)
 
 
 class ProviderStatus(BaseModel):

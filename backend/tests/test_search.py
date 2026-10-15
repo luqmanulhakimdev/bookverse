@@ -34,6 +34,10 @@ async def test_provider_failure_isolated_and_duplicates_removed():
     assert [b.title for b in result.items] == ["Dune"]
     assert result.providers[0].status == "error"
     assert result.total is None
+    assert {source.provider for source in result.items[0].sources} == {
+        "open_library",
+        "google_books",
+    }
 
 
 @pytest.mark.asyncio

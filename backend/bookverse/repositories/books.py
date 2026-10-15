@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from ..models import Author, Book, BookAuthor, BookGenre, BookSource, Genre
 from ..schemas import Book as BookSchema
+from ..schemas import BookSourceInfo
 
 
 async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
@@ -23,6 +24,7 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
     if source:
         book = source.book
         source.access_type = item.access_type
+        source.source_url = str(item.source_url) if item.source_url else None
         source.access_url = str(item.access_url) if item.access_url else None
         source.license_or_rights = item.license_or_rights
         source.last_synced_at = func.now()
@@ -44,6 +46,7 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
                 provider=item.source,
                 external_id=source_id,
                 access_type=item.access_type,
+                source_url=str(item.source_url) if item.source_url else None,
                 access_url=str(item.access_url) if item.access_url else None,
                 license_or_rights=item.license_or_rights,
             )
@@ -80,6 +83,23 @@ async def persist_book(session: AsyncSession, item: BookSchema) -> Book:
     return book
 
 
+async def attach_source(session: AsyncSession, book_id: UUID, source: BookSourceInfo) -> None:
+    row = await session.scalar(
+        select(BookSource).where(
+            BookSource.provider == source.provider,
+            BookSource.external_id == source.external_id,
+        )
+    )
+    if row is None:
+        row = BookSource(book_id=book_id, provider=source.provider, external_id=source.external_id)
+        session.add(row)
+    row.book_id = book_id
+    row.source_url = str(source.source_url) if source.source_url else None
+    row.access_type = source.access_type
+    row.access_url = str(source.access_url) if source.access_url else None
+    row.license_or_rights = source.license_or_rights
+
+
 async def get_book(session: AsyncSession, book_id: UUID) -> Book | None:
     return await session.scalar(
         select(Book)
@@ -108,6 +128,7 @@ async def serialize_book(book: Book) -> dict:
             {
                 "provider": s.provider,
                 "external_id": s.external_id,
+                "source_url": s.source_url,
                 "access_type": s.access_type,
                 "access_url": s.access_url,
                 "rights": s.license_or_rights,
@@ -115,7 +136,7 @@ async def serialize_book(book: Book) -> dict:
             for s in book.sources
         ],
         "source": source.provider if source else "bookverse",
-        "source_url": source.access_url if source else None,
+        "source_url": source.source_url if source else None,
         "access_type": source.access_type if source else "unknown",
         "access_url": source.access_url if source else None,
     }

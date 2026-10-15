@@ -17,7 +17,7 @@ from .config import settings
 from .database import get_session
 from .providers import GoogleBooksProvider, GutenbergProvider, OpenLibraryProvider
 from .rate_limit import SlidingWindowLimiter
-from .repositories.books import get_book, persist_book, serialize_book
+from .repositories.books import attach_source, get_book, persist_book, serialize_book
 from .search import AllProvidersFailed, search_books
 
 
@@ -140,7 +140,15 @@ async def get_books(
         )
         for item in result.items:
             external_id = item.external_id or item.id
+            source_records = item.sources
             stored = await persist_book(session, item)
+            for source_record in source_records:
+                if (
+                    source_record.provider == item.source
+                    and source_record.external_id == external_id
+                ):
+                    continue
+                await attach_source(session, stored.id, source_record)
             item.external_id = external_id
             item.id = str(stored.id)
         await session.commit()
@@ -196,6 +204,7 @@ async def get_book_availability(book_id: str, session: AsyncSession = Depends(ge
                 "provider": s.provider,
                 "access_type": s.access_type,
                 "access_url": s.access_url,
+                "source_url": s.source_url,
                 "rights": s.license_or_rights,
             }
             for s in book.sources

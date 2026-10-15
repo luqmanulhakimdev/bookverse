@@ -2,13 +2,14 @@
 
 BookVerse is a book discovery app that searches Open Library and Google Books through a normalized FastAPI API and a responsive React interface. It is being built as a modular monolith; the initial release focuses on public catalog search.
 
-## Phase 1 features
+## Implemented features
 
 - Async Open Library and Google Books adapters with explicit connection/request timeouts.
 - Unified book response schema, defensive handling for incomplete catalog records, concurrent provider requests, per-provider status, deterministic deduplication and sorting.
 - Partial results when a provider fails and HTTP 502 when all enabled providers fail.
 - Search validation, bounded pagination inputs, CORS configuration, health endpoints, and generated OpenAPI docs.
 - Responsive React search interface with debounced real API requests, source links, preview/reading labels, provider filter, loading/empty/error states, and accessible controls.
+- Internal book detail and source comparison pages, secure account flows, a private rated/progress-tracking library, and personalized/similar-book pages.
 - Mocked provider and orchestration tests; normal tests make no live requests.
 - Project Gutenberg catalog results through Gutendex, with source-reported ebook links and rights notes that distinguish US public-domain signals from worldwide rights.
 
