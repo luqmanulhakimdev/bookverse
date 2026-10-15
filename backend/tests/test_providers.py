@@ -9,8 +9,10 @@ from bookverse.providers.open_library import OpenLibraryProvider
 class MockClient:
     def __init__(self, payload):
         self.payload = payload
+        self.params = None
 
     async def get(self, url, params):
+        self.params = params
         request = httpx.Request("GET", url)
         return httpx.Response(200, json=self.payload, request=request)
 
@@ -63,3 +65,15 @@ async def test_gutenberg_uses_reported_epub_and_explains_rights_scope():
     assert books[0].access_type == "download"
     assert "United States" in books[0].license_or_rights
     assert str(books[0].source_url) == "https://www.gutenberg.org/ebooks/84"
+
+
+@pytest.mark.asyncio
+async def test_gutenberg_popular_requests_popularity_sorted_catalog():
+    client = MockClient({"results": [{"id": 11, "title": "Alice", "formats": {}}]})
+    provider = GutenbergProvider(client, "https://gutendex.com/books/")
+
+    books = await provider.popular(2, 10)
+
+    assert client.params == {"sort": "popular", "page": 2}
+    assert books[0].title == "Alice"
+    assert str(books[0].source_url) == "https://www.gutenberg.org/ebooks/11"

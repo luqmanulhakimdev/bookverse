@@ -18,6 +18,7 @@ from .database import get_session
 from .providers import GoogleBooksProvider, GutenbergProvider, OpenLibraryProvider
 from .rate_limit import SlidingWindowLimiter
 from .repositories.books import attach_source, get_book, persist_book, serialize_book
+from .schemas import ProviderStatus, SearchResponse
 from .search import AllProvidersFailed, search_books
 
 
@@ -162,6 +163,44 @@ async def get_books(
                 "message": "All book catalogs are temporarily unavailable",
             },
         ) from None
+
+
+@app.get("/api/v1/gutenberg/popular", response_model=SearchResponse)
+async def get_popular_gutenberg_books(
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=40),
+    session: AsyncSession = Depends(get_session),
+):
+    """Return Project Gutenberg's most-downloaded titles for discovery."""
+    provider = next((p for p in app.state.providers if p.name == "gutenberg"), None)
+    if provider is None:
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "provider_unavailable", "message": "Project Gutenberg is unavailable"},
+        )
+    try:
+        books = await provider.popular(page, limit)
+        for item in books:
+            external_id = item.external_id or item.id
+            stored = await persist_book(session, item)
+            item.external_id = external_id
+            item.id = str(stored.id)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise HTTPException(
+            status_code=502,
+            detail={"code": "upstream_unavailable", "message": "Project Gutenberg is temporarily unavailable"},
+        ) from None
+    return SearchResponse(
+        items=books,
+        page=page,
+        limit=limit,
+        fetched_count=len(books),
+        total=None,
+        total_kind="fetched_results",
+        providers=[ProviderStatus(provider="gutenberg", status="ok", result_count=len(books))],
+    )
 
 
 @app.get("/api/v1/books/{book_id}")

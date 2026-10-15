@@ -12,6 +12,7 @@ BookVerse is a book discovery app that searches Open Library and Google Books th
 - Internal book detail and source comparison pages, secure account flows, a private rated/progress-tracking library, and personalized/similar-book pages.
 - Mocked provider and orchestration tests; normal tests make no live requests.
 - Project Gutenberg catalog results through Gutendex, with source-reported ebook links and rights notes that distinguish US public-domain signals from worldwide rights.
+- A Project Gutenberg popular shelf on the discovery page, ranked by Gutenberg download popularity and linked to its read/download options.
 
 ## Persistence and accounts
 

@@ -19,7 +19,7 @@ describe('discovery home', () => {
   it('shows an accessible search field and an actionable empty prompt', () => {
     renderHome();
     expect(screen.getByLabelText('Search books and authors')).toBeInTheDocument();
-    expect(screen.getByText('Follow a curiosity.')).toBeInTheDocument();
+    expect(screen.getByText('Start with a reader favorite.')).toBeInTheDocument();
   });
 
   it('searches the real API contract and links to internal book details', async () => {

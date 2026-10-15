@@ -34,9 +34,16 @@ export default function App() {
   const debounced = useDebounced(query);
   useEffect(() => setPage(1), [debounced, provider, language, accessType]);
   const results = useQuery({
-    queryKey: ['books', debounced, provider, language, accessType, page],
-    enabled: debounced.trim().length >= 2,
+    queryKey: debounced.trim().length >= 2
+      ? ['books', debounced, provider, language, accessType, page]
+      : ['gutenberg-popular', page],
+    enabled: debounced.trim().length === 0 || debounced.trim().length >= 2,
     queryFn: async (): Promise<Result> => {
+      if (!debounced.trim()) {
+        const response = await fetch(`${API}/api/v1/gutenberg/popular?page=${page}&limit=20`);
+        if (!response.ok) throw new Error('Project Gutenberg popular books are temporarily unavailable.');
+        return response.json();
+      }
       const params = new URLSearchParams({ q: debounced.trim(), page: String(page), limit: '20' });
       if (provider) params.set('provider', provider);
       if (language) params.set('language', language);
@@ -67,8 +74,8 @@ export default function App() {
         <div className="secondary-filters"><label>Language <select aria-label="Filter by language" value={language} onChange={event => setLanguage(event.target.value)}><option value="">Any language</option><option value="en">English</option><option value="id">Indonesian</option><option value="fr">French</option><option value="es">Spanish</option></select></label><label>Access <select aria-label="Filter by access type" value={accessType} onChange={event => setAccessType(event.target.value)}><option value="">Any option</option><option value="preview">Preview</option><option value="read">Read online</option><option value="borrow">Borrow</option><option value="download">External ebook file</option><option value="metadata">Catalog record</option></select></label></div>
         <div className="popular"><span>TRY SEARCHING</span>{['The Hobbit', 'Ursula Le Guin', 'poetry'].map(item => <button key={item} onClick={() => setQuery(item)}>{item}</button>)}</div>
       </section>
-      <section className="results" id="discover"><div className="section-heading"><div><div className="eyebrow">THE DISCOVERY SHELF</div><h2>{debounced ? `Results for “${debounced}”` : 'A little inspiration'}</h2></div>{results.data && <span className="count">{results.data.fetched_count} books found</span>}</div>
-        {!debounced.trim() && <div className="welcome"><div className="welcome-art">✳</div><div><strong>Follow a curiosity.</strong><p>Search by title, author, or a subject you love to find your next read.</p></div></div>}
+      <section className="results" id="discover"><div className="section-heading"><div><div className="eyebrow">THE DISCOVERY SHELF</div><h2>{debounced ? `Results for “${debounced}”` : 'Popular on Project Gutenberg'}</h2></div>{results.data && <span className="count">{results.data.fetched_count} books found</span>}</div>
+        {!debounced.trim() && <div className="welcome"><div className="welcome-art">✳</div><div><strong>Start with a reader favorite.</strong><p>These titles are popular on Project Gutenberg. Search the catalogs above to explore more.</p></div></div>}
         {debounced.trim().length === 1 && <p className="message">Type at least 2 characters to search.</p>}
         {results.isFetching && <div className="grid" aria-label="Loading results">{Array.from({ length: 4 }, (_, i) => <div className="skeleton" key={i}><div/><span/><span/></div>)}</div>}
         {results.isError && <div className="message error" role="alert">{(results.error as Error).message} <button onClick={() => results.refetch()}>Try again</button></div>}

@@ -9,6 +9,13 @@ class GutenbergProvider(HttpProvider):
 
     async def search(self, query: str, page: int, limit: int) -> list[Book]:
         data = await self.get_json(self.base_url, {"search": query, "page": page})
+        return self._map_books(data, limit)
+
+    async def popular(self, page: int, limit: int) -> list[Book]:
+        data = await self.get_json(self.base_url, {"sort": "popular", "page": page})
+        return self._map_books(data, limit)
+
+    def _map_books(self, data: dict, limit: int) -> list[Book]:
         results = data.get("results", [])
         if not isinstance(results, list):
             return []
